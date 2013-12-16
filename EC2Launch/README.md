@@ -3,7 +3,7 @@ EC2Launch
 
 Launch EC2 instances (EBS based AMI) with custom root volume size.  
 
-```bash
+```
 $ ./ec2_launch.py --help
 
 Usage: ec2_launch.py -n web01 -r us-east-1 -z us-east-1c -a ami-bba18dd2 -i c1.xlarge --disk_size=200 -k mykey -s 'Web Server,Config Client'  
