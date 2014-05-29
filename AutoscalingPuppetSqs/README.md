@@ -1,6 +1,6 @@
 # AWS Autoscaling cleanup on Puppet via SQS
 
-This script reads messages from a SQS queue subscribed to a SNS topic used for your autoscaling groups
+This script reads messages from a SQS queue subscribed to a SNS topic used by your autoscaling groups
 
 Based on autoscaling:EC2_INSTANCE_TERMINATE events it will cleanup puppet certificates, deactivate node on PuppetDB and remove it from Puppet Dashboard
 
