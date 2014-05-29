@@ -44,7 +44,6 @@ def main():
             body = json.loads(result.get_body())
             msg = json.loads(body['Message'])
             event = msg['Event']
-            asgroupname = msg['AutoScalingGroupName']
             instanceid = msg['EC2InstanceId']
             if event == 'autoscaling:EC2_INSTANCE_TERMINATE':
                 puppet_cleanup(instanceid)
