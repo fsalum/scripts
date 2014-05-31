@@ -1,8 +1,13 @@
 # AWS Autoscaling cleanup on Puppet via SQS
 
-This script reads messages from a SQS queue subscribed to a SNS topic used by your autoscaling groups
+This script reads messages from a SQS queue subscribed to a SNS topic used by your autoscaling groups.
 
-Based on autoscaling:EC2_INSTANCE_TERMINATE events it will cleanup puppet certificates, deactivate node on PuppetDB and remove it from Puppet Dashboard
+You can also manually terminate non-autoscaling ec2 instances and send a message to the SQS queue for cleanup on puppet.
+
+It will cleanup puppet certificates, deactivate node on PuppetDB and remove it from Puppet Dashboard.
+Events:  
+* autoscaling:EC2_INSTANCE_TERMINATE
+* manual:EC2_INSTANCE_TERMINATE
 
 # Pre-requisites
 
@@ -46,6 +51,8 @@ Use [autoscaling.msg](autoscaling.msg) as SQS message sample for testing the scr
 
 ```
 [root@puppet1 ~]# ./puppet_sqs.py
+
+instance: i-5be0fe4e
 Cleaning up certificate for prod-app-admin-i-5be0fe4e.example.com
 
 Notice: Revoked certificate with serial 65
@@ -58,6 +65,9 @@ Submitted 'deactivate node' for prod-app-admin-i-5be0fe4e.example.com with UUID 
 Cleaning up dashboard for prod-app-admin-i-5be0fe4e.example.com
 
 (in /root)
+
+instance: server1.example.com
+Hostname not found for server1.example.com
 
 Removing not used message event autoscaling:EC2_INSTANCE_LAUNCH from queue
 ```

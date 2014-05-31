@@ -23,3 +23,9 @@
   "SigningCertURL" : "XYZ",
   "UnsubscribeURL" : "XYZ"
 }
+
+{
+  "Type" : "Notification",
+  "Subject" : "Manual: termination for instance server1.example.com",
+  "Message" : "{\"Event\":\"manual:EC2_INSTANCE_TERMINATE\",\"EC2InstanceId\":\"server1.example.com\"}"
+}
