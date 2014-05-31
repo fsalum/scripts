@@ -47,7 +47,10 @@ aws autoscaling put-notification-configuration --auto-scaling-group-name <as gro
 
 # Output sample
 
-Use [autoscaling.msg](autoscaling.msg) as SQS message sample for testing the script.
+Use [example/autoscaling.msg](example/autoscaling.msg) as SQS message sample for testing the script.
+
+The [example/manual_termination_sqs_sample.py](example/manual_termination_sqs_sample.py) script sends a 
+`manual:EC2_INSTANCE_TERMINATE` event to the SQS queue so you can manually terminate non-autoscaling ec2 instances and cleanup them the same way.
 
 ```
 [root@puppet1 ~]# ./puppet_sqs.py
