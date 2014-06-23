@@ -29,6 +29,7 @@ def options():
     group.add_option("-a", "--ami", dest="ami", default="ami-bba18dd2", help="AMI ID (default to ami-bba18dd2)")
     group.add_option("-i", "--instance_type", dest="instance_type", default="c1.xlarge", help="Instance type (default to c1.xlarge)")
     group.add_option("-d", "--disk_size", dest="disk_size", default="200", help="EBS Root volume disk size (default to 200GB)")
+    group.add_option("-p", "--iam_role", dest="iam_role", default=None, help="Instance Profile Name")
     parser.add_option_group(group)
 
     group = OptionGroup(parser, "Mandatory Options","These options must be specified, no default values")
@@ -46,38 +47,44 @@ def options():
     if not options.name or not options.key or not options.security_group:
         parser.error("Options -n (--name), -k (--key) and -s (--security_group) are mandatory.")
 
-    return options.region,options.availability_zone,options.ami,options.instance_type,options.disk_size,options.name,options.key,options.security_group
+    return options
 
 def main():
-    options.region,options.availability_zone,options.ami,options.instance_type,options.disk_size,options.name,options.key,options.security_group = options()
+    args = options()
 
     # Connect the region
     for r in regions():
-        if r.name == options.region:
+        if r.name == args.region:
             region = r
             break
     else:
-        print "Region %s not found." % options.region
+        print "Region %s not found." % args.region
         sys.exit(1)
 
     ec2 = boto.connect_ec2(region=region)
 
     # Change the default ebs root volume size
+    root = '/dev/sda'
     dev_sda1 = boto.ec2.blockdevicemapping.EBSBlockDeviceType(delete_on_termination=True)
-    dev_sda1.size = options.disk_size # size in Gigabytes
+    dev_sda1.size = args.disk_size # size in Gigabytes
     bdm = boto.ec2.blockdevicemapping.BlockDeviceMapping()
-    bdm['/dev/sda1'] = dev_sda1
+    bdm[root] = dev_sda1
 
-    reservation = ec2.run_instances(options.ami,
-                                    placement=options.availability_zone,
-                                    key_name=options.key,
-                                    instance_type=options.instance_type,
-                                    security_groups=options.security_group,
+    user_data="""#!/bin/bash
+    resize2fs %s
+    sed -i "s/^HOSTNAME.*/HOSTNAME=%s/g" /etc/sysconfig/network
+    hostname %s
+    """ % (root, args.name, args.name)
+
+    reservation = ec2.run_instances(args.ami,
+                                    placement=args.availability_zone,
+                                    key_name=args.key,
+                                    instance_type=args.instance_type,
+                                    security_groups=args.security_group,
                                     block_device_map=bdm,
-                                    user_data="""#!/bin/bash
-                                    resize2fs /dev/sda1
-                                    """,
-                                    dry_run=True)
+                                    user_data=user_data,
+                                    instance_profile_name=args.iam_role,
+                                    dry_run=False)
 
     instance = reservation.instances[0]
 
@@ -88,8 +95,9 @@ def main():
         instance.update()
     print 'done!'
 
-    instance.add_tag("Name", value=options.name)
+    instance.add_tag("Name", value=args.name)
 
+    print "Instance ID: %s" % instance.id
     print "Public IP: %s" % instance.ip_address
     print "Private IP: %s" % instance.private_ip_address
 
